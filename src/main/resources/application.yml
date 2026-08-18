@@ -1,6 +1,13 @@
 spring:
   application:
     name: yao-ai-code-mother-backend
+  # mysql
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ai_code_mother
+    username: root
+    password: 3333
+
 server:
   port: 8125
   servlet:
