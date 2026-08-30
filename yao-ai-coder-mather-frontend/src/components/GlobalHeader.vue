@@ -1,6 +1,39 @@
+<template>
+  <div class="header-container">
+    <div class="logo-section">
+      <img src="@/assets/logo.svg" alt="logo" class="logo" />
+      <span class="site-title">编程导航</span>
+    </div>
+    <a-menu
+      v-model:selectedKeys="current"
+      mode="horizontal"
+      :items="menuItems"
+      @click="handleMenuClick"
+      class="menu"
+    />
+    <div class="user-section">
+      <div v-if="loginUserStore.loginUser.id">
+        <a-dropdown>
+          <a-avatar :src="loginUserStore.loginUser.userAvatar"></a-avatar>
+          {{ loginUserStore.loginUser.userName }}
+          <template #overlay>
+            <a-menu mode="horizontal"> 123 </a-menu>
+          </template>
+        </a-dropdown>
+      </div>
+      <div v-else>
+        <a-button type="primary" @click="router.push('/user/login')">登录</a-button>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useLoginUserStore } from '@/store/loginUser.ts'
+
+const loginUserStore = useLoginUserStore()
 
 interface MenuItem {
   key: string
@@ -42,25 +75,6 @@ const handleMenuClick = ({ key }: { key: string }) => {
   }
 }
 </script>
-
-<template>
-  <div class="header-container">
-    <div class="logo-section">
-      <img src="@/assets/logo.svg" alt="logo" class="logo" />
-      <span class="site-title">编程导航</span>
-    </div>
-    <a-menu
-      v-model:selectedKeys="current"
-      mode="horizontal"
-      :items="menuItems"
-      @click="handleMenuClick"
-      class="menu"
-    />
-    <div class="user-section">
-      <a-button type="primary">登录</a-button>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .header-container {
