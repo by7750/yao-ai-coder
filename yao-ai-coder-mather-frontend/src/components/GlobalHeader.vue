@@ -33,7 +33,12 @@
         v-model:selectedKeys="current"
         mode="vertical"
         :items="menuItems"
-        @click="(item) => { handleMenuClick(item); mobileMenuOpen = false }"
+        @click="
+          (item) => {
+            handleMenuClick(item)
+            mobileMenuOpen = false
+          }
+        "
         class="mobile-menu"
       />
       <div class="mobile-user-section">
@@ -46,7 +51,16 @@
           </a-button>
         </div>
         <div v-else>
-          <a-button type="primary" block @click="router.push('/user/login'); mobileMenuOpen = false">
+          <a-button
+            type="primary"
+            block
+            @click="
+              () => {
+                router.push('/user/login')
+                mobileMenuOpen = false
+              }
+            "
+          >
             登录
           </a-button>
         </div>
@@ -76,12 +90,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, h, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/store/loginUser.ts'
 import { userLogout } from '@/api/userController.ts'
 import LogoutOutlined, { MenuOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { type MenuProps, message } from 'ant-design-vue'
+import { HomeOutlined } from '@ant-design/icons-vue'
 
 const loginUserStore = useLoginUserStore()
 
@@ -91,40 +106,37 @@ interface MenuItem {
   path: string
 }
 
-interface Props {
-  menuItems?: MenuItem[]
-}
-
-// 菜单配置
-const props = withDefaults(defineProps<Props>(), {
-  menuItems: () => [
-    { key: 'home', label: '首页', path: '/' },
-    { key: 'about', label: '关于', path: '/about' },
-  ],
-})
-
-const route = useRoute()
 const router = useRouter()
 
 const current = ref<string[]>(['home'])
 const mobileMenuOpen = ref(false)
-// 监听路由变化更新当前选中菜单
-// watch(
-//   () => route.path,
-//   (path) => {
-//     const item = props.menuItems.find((item) => item.path === path)
-//     if (item) {
-//       current.value = [item.key]
-//     }
-//   },
-//   { immediate: true },
-// )
-router.afterEach((to, from, next) => {
-  current.value = [to.name]
+
+const originItems: MenuItem[] = [
+  { key: 'home', icon: () => h(HomeOutlined), label: '首页', path: '/' },
+  { key: '用户管理', label: '用户管理', path: '/admin/userManage' },
+  { key: 'about', label: '关于', path: '/about' },
+]
+
+const filterMenus = (menus: MenuItem[]) => {
+  return menus.filter((menu) => {
+    if (menu.key === '用户管理') {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+const menuItems = computed<MenuProps['items']>(() => filterMenus(originItems))
+
+router.afterEach((to) => {
+  current.value = [to.name as string]
 })
 
 const handleMenuClick = ({ key }: { key: string }) => {
-  const item = props.menuItems.find((item) => item.key === key)
+  const item = originItems.find((i) => i.key === key)
   if (item) {
     router.push(item.path)
   }
